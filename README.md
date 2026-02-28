@@ -41,8 +41,16 @@ The server code lives in `server.js`; modify it if you want to change prompts or
 
 ## Project Structure
 
-- `src/App.tsx` - main component with textarea, file/image upload and analysis button.
-- `src/services/aiClient.ts` - frontend helper that calls the backend API.
-- `server.js` - simple Express server that invokes OpenAI GPT‑4.
+- `src/App.tsx` - main application component orchestrating the workflow.
+- `src/components/` - reusable UI components with single responsibility:
+  - `FileUploadInput.tsx` - file upload input (text and image files).
+  - `ImagePreview.tsx` - displays uploaded image preview.
+  - `TextInput.tsx` - textarea for pasting snapshot text.
+  - `AnalysisResult.tsx` - renders analysis results with loading and error states.
+- `src/hooks/` - custom React hooks for state management:
+  - `useFileUpload.ts` - manages file upload logic and state.
+  - `useAnalysis.ts` - manages analysis state, loading, and error handling.
+- `src/services/aiClient.ts` - service layer that calls the backend API.
+- `server.js` - Express backend server that forwards requests to OpenAI GPT‑4.
 
-Extend the service with real AI calls (OpenAI, local model, etc.) and expand the UI as needed.
+Each component and hook follows the **single responsibility principle** for clarity and maintainability.

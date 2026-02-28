@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './App.css';
-import { analyzeSnapshot } from './services/aiClient';
+import { useFileUpload } from './hooks/useFileUpload';
+import { useAnalysis } from './hooks/useAnalysis';
+import { FileUploadInput } from './components/FileUploadInput';
+import { ImagePreview } from './components/ImagePreview';
+import { TextInput } from './components/TextInput';
+import { AnalysisResult } from './components/AnalysisResult';
 
+/**
+ * Main application component for analyzing product snapshots.
+ * Manages file uploads, text input, and AI analysis workflow.
+ */
 function App() {
-  const [snapshot, setSnapshot] = useState('');
-  const [analysis, setAnalysis] = useState('');
+  const file = useFileUpload();
+  const analysis = useAnalysis();
 
-  const handleAnalyze = async () => {
-    // call AI service to process snapshot
-    const result = await analyzeSnapshot(snapshot);
-    setAnalysis(result);
+  const handleAnalyzeClick = async () => {
+    await analysis.performAnalysis(file.content);
   };
 
   return (
@@ -20,41 +27,22 @@ function App() {
       </header>
 
       <main className="App-main">
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="fileUpload">Upload snapshot file:</label>
-          <input
-            id="fileUpload"
-            type="file"
-            accept=".txt,.json,.md"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                  setSnapshot(reader.result as string);
-                };
-                reader.readAsText(file);
-              }
-            }}
-          />
-        </div>
-        <textarea
-          value={snapshot}
-          onChange={(e) => setSnapshot(e.target.value)}
-          placeholder="Paste snapshot content here..."
-          rows={10}
-          style={{ width: '100%' }}
+        <FileUploadInput onFileSelect={file.handleFileSelect} />
+        <ImagePreview imageSrc={file.imageSrc} />
+        <TextInput
+          value={file.snapshot}
+          onChange={file.setSnapshot}
+          disabled={!!file.imageSrc}
         />
-        <button onClick={handleAnalyze} style={{ marginTop: '1rem' }}>
+        <button onClick={handleAnalyzeClick} style={{ marginTop: '1rem' }}>
           Analyze
         </button>
 
-        {analysis && (
-          <section className="App-result">
-            <h2>Analysis Result</h2>
-            <pre>{analysis}</pre>
-          </section>
-        )}
+        <AnalysisResult
+          analysis={analysis.analysis}
+          isLoading={analysis.isLoading}
+          error={analysis.error}
+        />
       </main>
     </div>
   );
