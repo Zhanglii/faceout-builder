@@ -37,7 +37,7 @@ The uploaded content (text or base64 image data) is passed to the AI service for
    This starts an API on port 3001. The React dev server proxies `/api` calls to it automatically.
 4. Start the frontend in another terminal (`npm start`) and use the UI as before.
 
-The server code lives in `server.js`; modify it if you want to change prompts or use a different model.
+The server code lives in `server.js`; it uses **gpt-3.5-turbo** (cost-effective) with input truncation at 5000 chars to stay within rate limits. Modify the model or limits if your API tier allows.
 
 ## Project Structure
 

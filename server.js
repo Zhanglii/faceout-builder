@@ -13,17 +13,22 @@ const openai = new OpenAI({
 
 app.post('/api/analyze', async (req, res) => {
   try {
-    const { content } = req.body;
+    let { content } = req.body;
     if (!content) {
       return res.status(400).json({ error: 'no content' });
+    }
+
+    // Limit input to prevent rate limit errors
+    if (content.length > 5000) {
+      content = content.substring(0, 5000) + '... (truncated)';
     }
 
     const prompt = `Analyze this snapshot:\n\n${content}`;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo',  // cheaper model, sufficient for most analysis
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 1000,
+      max_tokens: 500,  // reduced from 1000
     });
 
     const result = completion.choices[0].message?.content || '';
