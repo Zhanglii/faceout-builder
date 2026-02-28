@@ -1,10 +1,5 @@
 import { useState, useCallback } from 'react';
 
-interface FileUploadState {
-  snapshot: string;
-  imageSrc: string | null;
-}
-
 /**
  * Hook for managing file upload logic.
  * Handles both text files and image uploads separately.
