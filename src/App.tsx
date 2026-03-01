@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { useFileUpload } from './hooks/useFileUpload';
 import { useAnalysis } from './hooks/useAnalysis';
@@ -7,6 +7,7 @@ import { FileUploadInput } from './components/FileUploadInput';
 import { ImagePreview } from './components/ImagePreview';
 import { TextInput } from './components/TextInput';
 import { AnalysisResult } from './components/AnalysisResult';
+import { parseAnalysis, AnalysisStructure } from './services/analysisParser';
 
 /**
  * Main application component for analyzing product snapshots.
@@ -16,6 +17,22 @@ function App() {
   const file = useFileUpload();
   const analysis = useAnalysis();
   const [activeTab, setActiveTab] = useState<'upload' | 'text'>('upload');
+  const [parsedAnalysis, setParsedAnalysis] = useState<AnalysisStructure | null>(null);
+
+  // Parse analysis result when it updates
+  useEffect(() => {
+    if (analysis.analysis) {
+      try {
+        const parsed = parseAnalysis(analysis.analysis);
+        setParsedAnalysis(parsed);
+      } catch (err) {
+        console.error('Failed to parse analysis:', err);
+        setParsedAnalysis(null);
+      }
+    } else {
+      setParsedAnalysis(null);
+    }
+  }, [analysis.analysis]);
 
   const handleAnalyzeClick = async () => {
     await analysis.performAnalysis(file.content);
@@ -69,11 +86,15 @@ function App() {
           {analysis.isLoading ? 'Processing...' : 'Analyze'}
         </button>
 
-        <AnalysisResult
-          analysis={analysis.analysis}
-          isLoading={analysis.isLoading}
-          error={analysis.error}
-        />
+        <div className="analysis-results-container">
+          <AnalysisResult
+            analysis={analysis.analysis}
+            isLoading={analysis.isLoading}
+            error={analysis.error}
+            features={parsedAnalysis?.features}
+            sourceImage={file.imageSrc || undefined}
+          />
+        </div>
       </main>
     </div>
   );

@@ -5,8 +5,9 @@ This project is a starting point for building an AI agent in React (written in T
 ## Technologies
 
 - **Frontend**: React 19 + TypeScript
-- **Backend**: Express.js + OpenAI GPT-3.5-turbo
-- **OCR**: Tesseract.js (optical character recognition)
+- **Backend**: Express.js + OpenAI (dual-pipeline analyzer)
+- **OCR/Text pass**: Vision OCR pass (default) or optional Tesseract
+- **Visual pass**: Vision feature extraction (icons, stars, badges, product image)
 - **Markdown**: react-markdown (for formatted output display)
 - **Styling**: CSS with semantic HTML
 
@@ -45,12 +46,26 @@ The uploaded content (text or base64 image data) is passed to the AI service for
    This starts an API on port 3001. The React dev server proxies `/api` calls to it automatically.
 4. Start the frontend in another terminal (`npm start`) and use the UI as before.
 
-The server code lives in `server.js`. It now **automatically extracts text from uploaded images using OCR (Tesseract)** before sending to OpenAI, so you can upload large images without hitting rate limits.
+The server code lives in `server.js`. Image analysis now uses a **dual-pipeline with cross-checking**:
 
-#### OCR Processing
-- If you upload a PNG/JPG, the server runs Tesseract OCR to extract the visible text.
-- The extracted text (instead of the raw base64 image) is sent to GPT-3.5-turbo for analysis.
-- This dramatically reduces token usage and prevents rate-limit errors.
+1. **OCR/Text pipeline**: extracts textual signals (title, price, rating, review count)
+2. **Visual pipeline**: extracts visual assets (stars, badges, logos, product image, buttons)
+3. **Fusion layer**: merges both outputs with confidence + mismatch notes
+
+By default, OCR uses a separate **vision OCR pass** for stability. Optional Tesseract can be enabled.
+
+#### Dual-Pipeline Config (optional)
+Add any of these to `.env`:
+
+```bash
+TEXT_MODEL=gpt-4.1-mini
+OCR_MODEL=gpt-4.1-mini
+VISION_MODEL=gpt-4.1-mini
+USE_TESSERACT_OCR=false
+```
+
+- `USE_TESSERACT_OCR=false` (default) avoids worker crashes on malformed images.
+- `USE_TESSERACT_OCR=true` enables Tesseract as the OCR source.
 
 Modify the model, prompts, or input limits as needed for your use case.
 
